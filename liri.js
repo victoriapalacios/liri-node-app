@@ -1,6 +1,9 @@
 var Twitter = require('twitter');
 var keys = require('./keys.js');
+var client = require('./keys.js');
 var Spotify = require('node-spotify-api');
+var request = require('request');
+var fs = require('file-system');
 
 // Below is where we collect the users command, which will be "my-tweets", "spotify-this-song", "movie-this" or "do-what-it-says"
  var command = process.argv[2];
@@ -41,12 +44,13 @@ switch(command) {
 
 // Below is a function for how we display up to 20 tweets
 function displayTweets() {
-    var client = new Twitter(keys.twitterKeys);
     var params = {
       screen_name: 'TorieBootcamp',
       count: 20
     };
-    client.get('statuses/user_timeline', params, function (tweets) {
+
+    client.get('statuses/user_timeline', params, function (error, tweets, response) {
+
       for (var i = 0; i < tweets.length; i++) {
           console.log(' Tweet: ' + tweets[i].text)
       }
@@ -76,19 +80,36 @@ function spotifySong() {
 
 // Below is a function for how we call to the movie API
 function movieThis() {
-  console.log("MOVIE");
+  // Below is how we use request to access the OMDB API
+  request('http://www.omdbapi.com/?apikey=40e9cece&t=' + userInput, function (error, response, body, movie) {
+    //console.log('error:', error);
+    //console.log('statusCode:', response && response.statusCode);
+    console.log('body:', body);
 
-   console.log("Title: ");
-   console.log("Year: ");
-   console.log("IMDB Rating: ");
-   console.log("Rotten Tomatoes Rating: ");
-   console.log("Country Produced: ");
-   console.log("Laugnage: ");
-   console.log("Plot: ");
-   console.log("Actors: ");
+   var body = JSON.parse(body);
+
+   console.log("Title: " + body.Title);
+   console.log("Year: " + body.Year);
+   console.log("IMDB Rating: " + body.imdbRating);
+   console.log("Rotten Tomatoes Rating: " + body.imdbRating);
+   console.log("Country Produced: " + body.Country);
+   console.log("Laugnage: " + body.Language);
+   console.log("Plot: " + body.Plot);
+   console.log("Actors: " + body.Actors);
+  });
 };
 
 // Below is a function for how we do a thing
 function doAThing() {
-  console.log("THING");
+  //console.log("THING");
+  fs.readFile('random.txt', "utf8", function(error, data){
+
+  if (error) {
+    return console.log(error);
+  }
+
+  var fileCommands = data.split(',');
+  command(fileCommands[0], fileCommands[1]);
+
+  });
 };
